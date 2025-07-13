@@ -36,7 +36,7 @@
 ## 📱 Download Links
 
 ### Android
-- **APK Download**: Coming Soon!
+- **APK Download**: [Latest Release](https://bit.ly/OpenspotApk)
 
 ### iOS
 - **TestFlight**: Coming Soon!
