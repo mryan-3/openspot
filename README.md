@@ -1,50 +1,195 @@
-# Welcome to your Expo app 👋
+# OpenSpot 🎶📱
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+<p align="center">
+ <img width="46" alt="OpenSpot Logo" src="https://github.com/user-attachments/assets/05e9128b-3f4f-4103-ae0a-ade4d0e33eb1" />
+</p>
 
-## Get started
+<h3 align="center">Your Gateway to Limitless Music - Now on Mobile!</h3>
 
-1. Install dependencies
+<p align="center">
+  <strong>Stream and download high-quality music for free on your mobile device, with no ads and no login required.</strong>
+  <br />
+  <em>Note: The Next.js web version has been moved to another branch and the demo URL is no longer active.</em>
+</p>
 
+<p align="center">
+  <a href="https://github.com/BlackHatDevX/openspot-music-app/stargazers">
+    <img src="https://img.shields.io/github/stars/BlackHatDevX/openspot-music-app?style=for-the-badge&color=ffd700" alt="Stars">
+  </a>
+  <a href="https://github.com/BlackHatDevX/openspot-music-app/network/members">
+    <img src="https://img.shields.io/github/forks/BlackHatDevX/openspot-music-app?style=for-the-badge&color=84b4a3" alt="Forks">
+  </a>
+  <a href="https://github.com/BlackHatDevX/openspot-music-app/issues">
+    <img src="https://img.shields.io/github/issues/BlackHatDevX/openspot-music-app?style=for-the-badge&color=f38ba8" alt="Issues">
+  </a>
+</p>
+
+---
+
+**OpenSpot Mobile** is the native mobile version of the popular OpenSpot music streaming application. Built with React Native and Expo, it brings the same seamless, high-fidelity listening experience to your iOS and Android devices with native performance and mobile-optimized features.
+
+## ✨ Screenshots
+
+*Screenshots will be added here once the app is ready for distribution*
+
+![Mobile App Preview](https://via.placeholder.com/800x400/667eea/ffffff?text=OpenSpot+Mobile+Coming+Soon)
+
+## 📱 Download Links
+
+### Android
+- **APK Download**: Coming Soon!
+
+### iOS
+- **TestFlight**: Coming Soon!
+
+## ✨ Features
+
+- **Native Mobile Experience**: Optimized for iOS and Android with smooth animations and native performance
+- **High-Quality Streaming**: Listen to your favorite tracks in the best possible quality
+- **Offline Downloads**: Save music directly to your device for offline listening
+- **Background Playback**: Continue listening while using other apps
+- **No Login Required**: Jump right in! No accounts or sign-ups needed
+- **Like & Collect**: Build your personal collection by liking songs
+- **Beautiful Mobile UI**: Clean, modern interface designed specifically for mobile devices
+- **Persistent Player**: Your queue and playback state are saved across app restarts
+- **Completely Free & Ad-Free**: Enjoy uninterrupted music without any cost or advertisements
+
+## 🚀 Development Setup
+
+### Prerequisites
+
+- Node.js (v18 or higher)
+- npm or yarn
+- Expo CLI (`npm install -g @expo/cli`)
+- EAS CLI (`npm install -g eas-cli`)
+
+### For Development & Testing (Expo Go)
+
+1. **Clone the repository**
    ```bash
-   npm install
+   git clone https://github.com/BlackHatDevX/openspot-music-app.git
+   cd openspot-music-app/OpenSpot-RN
    ```
 
-2. Start the app
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
+3. **Start the development server**
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+4. **Test on your device**
+   - Install **Expo Go** from the App Store (iOS) or Google Play Store (Android)
+   - Scan the QR code from your terminal with Expo Go
+   - The app will load directly on your device for testing
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### For Production Builds (EAS Build)
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+#### Setup EAS
 
-## Get a fresh project
+1. **Login to your Expo account**
+   ```bash
+   eas login
+   ```
 
-When you're ready, run:
+2. **Initialize EAS in your project**
+   ```bash
+   eas build:configure
+   ```
+
+#### Build for Android
+
+1. **Development Build**
+   ```bash
+   eas build --platform android --profile development
+   ```
+
+2. **Preview Build (APK)**
+   ```bash
+   eas build --platform android --profile preview
+   ```
+
+3. **Production Build**
+   ```bash
+   eas build --platform android --profile production
+   ```
+
+#### Build for iOS
+
+1. **Development Build**
+   ```bash
+   eas build --platform ios --profile development
+   ```
+
+2. **Preview Build**
+   ```bash
+   eas build --platform ios --profile preview
+   ```
+
+3. **Production Build**
+   ```bash
+   eas build --platform ios --profile production
+   ```
+
+#### Build for Both Platforms
 
 ```bash
-npm run reset-project
+eas build --platform all --profile production
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
-## Learn more
+## 🏗️ Build Configuration
 
-To learn more about developing your project with Expo, look at the following resources:
+The app uses EAS Build with the following profiles configured in `eas.json`:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- **development**: For development builds with dev client
+- **preview**: For internal testing (APK for Android)
+- **production**: For app store distribution
 
-## Join the community
+## 💻 Tech Stack
 
-Join our community of developers creating universal apps.
+- **Framework**: [React Native](https://reactnative.dev/) with [Expo](https://expo.dev/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Navigation**: [Expo Router](https://expo.github.io/router/)
+- **Audio**: [Expo AV](https://docs.expo.dev/versions/latest/sdk/av/)
+- **Styling**: [React Native StyleSheet](https://reactnative.dev/docs/stylesheet)
+- **State Management**: React Hooks & Context
+- **Build System**: [EAS Build](https://docs.expo.dev/build/introduction/)
+- **Development**: [Expo Go](https://expo.dev/client) for testing
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+## 🤝 Contributing & Community
+
+OpenSpot Mobile is an open-source project. We welcome all contributions, from bug fixes to feature suggestions. Help us make OpenSpot the best free music platform for mobile devices!
+
+
+### Getting Help
+
+- Check the [Issues](https://github.com/BlackHatDevX/openspot-music-app/issues) section
+- Contact the Author (see below)
+
+## 👤 Author & Contact
+
+**Jash Gro**
+
+- **LinkedIn**: [https://linkedin.com/in/jash-gro/](https://linkedin.com/in/jash-gro/)
+- **Portfolio**: [https://bit.ly/jashgro](https://bit.ly/jashgro)
+- **Telegram**: [https://telegram.dog/deveIoper_x](https://telegram.dog/deveIoper_x)
+- **GitHub**: [https://github.com/BlackHatDevX](https://github.com/BlackHatDevX)
+
+## 📄 License
+
+This project is open-source and licensed under the MIT License. See the `LICENSE` file for more information.
+
+---
+
+<p align="center">
+  <strong>⭐ If you like this project, please give it a star! ⭐</strong>
+  <br />
+  <em>Your support helps us continue developing amazing free music apps for everyone.</em>
+</p>
