@@ -167,6 +167,9 @@ The app uses EAS Build with the following profiles configured in `eas.json`:
 OpenSpot Mobile is an open-source project. We welcome all contributions, from bug fixes to feature suggestions. Help us make OpenSpot the best free music platform for mobile devices!
 
 
+## **Telegram** : [Openspot Music](https://telegram.dog/Openspot_Music)
+
+
 ### Getting Help
 
 - Check the [Issues](https://github.com/BlackHatDevX/openspot-music-app/issues) section
