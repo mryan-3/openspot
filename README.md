@@ -30,9 +30,8 @@
 
 ## ✨ Screenshots
 
-*Screenshots will be added here once the app is ready for distribution*
+![2025-07-14 00 51 30](https://github.com/user-attachments/assets/5a48d1e1-c862-4cea-9d0a-a29606ac5b74)
 
-![Mobile App Preview](https://via.placeholder.com/800x400/667eea/ffffff?text=OpenSpot+Mobile+Coming+Soon)
 
 ## 📱 Download Links
 
