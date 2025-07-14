@@ -41,6 +41,7 @@
 
 ### Android
 - **APK Download**: [Latest Release V2.0.1](https://github.com/BlackHatDevX/openspot-music-app/releases/download/v2.0.1/OpenSpot-2.0.1-release.apk)
+- **Release Notes & Changelog** : [HERE](https://github.com/BlackHatDevX/openspot-music-app/releases)
 
 ### iOS
 - **TestFlight**: Coming Soon!
