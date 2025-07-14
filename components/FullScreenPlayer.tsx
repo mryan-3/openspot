@@ -110,11 +110,6 @@ export function FullScreenPlayer({
     toggleLike(track);
   };
 
-  const handleVolumeChange = (value: number) => {
-    // Parent expects 0-100 range, but we're already getting 0-1 from slider
-    // So we need to convert 0-1 to 0-100
-    onVolumeChange(value * 100);
-  };
 
   const handleClose = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -252,25 +247,6 @@ export function FullScreenPlayer({
               />
             </TouchableOpacity> */}
             
-            <View style={styles.volumeContainer}>
-              <TouchableOpacity onPress={onMuteToggle} style={styles.volumeButton}>
-                <Ionicons 
-                  name={isMuted ? "volume-mute" : "volume-high"} 
-                  size={20} 
-                  color="#fff" 
-                />
-              </TouchableOpacity>
-              <Slider
-                style={styles.volumeSlider}
-                minimumValue={0}
-                maximumValue={1}
-                value={isMuted ? 0 : volume}
-                onValueChange={handleVolumeChange}
-                minimumTrackTintColor="#1DB954"
-                maximumTrackTintColor="#4B5563"
-                thumbTintColor="#1DB954"
-              />
-            </View>
           </View>
         </View>
       </SafeAreaView>
