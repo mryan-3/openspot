@@ -1,8 +1,12 @@
 # OpenSpot 🎶📱
 
 <p align="center">
- <img width="46" alt="OpenSpot Logo" src="https://github.com/user-attachments/assets/05e9128b-3f4f-4103-ae0a-ade4d0e33eb1" />
+ <img width="100" alt="OpenSpot Logo" src="https://github.com/user-attachments/assets/a5ce6530-3f01-4418-bfe8-09a0d6055cb1" />
 </p>
+
+
+
+
 
 <h3 align="center">Your Gateway to Limitless Music - Now on Mobile!</h3>
 
@@ -36,7 +40,7 @@
 ## 📱 Download Links
 
 ### Android
-- **APK Download**: [Latest Release](https://bit.ly/OpenspotApk)
+- **APK Download**: [Latest Release V2.0.1](https://github.com/BlackHatDevX/openspot-music-app/releases/download/v2.0.1/OpenSpot-2.0.1-release.apk)
 
 ### iOS
 - **TestFlight**: Coming Soon!
