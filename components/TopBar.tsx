@@ -43,12 +43,18 @@ export function TopBar({
   const [searchFocused, setSearchFocused] = useState(false);
   const { query, setQuery, searchTracks, clearResults } = searchState;
 
+  const handleSearchSubmit = () => {
+    if (query.trim()) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      searchTracks(query.trim());
+      onSearchStart();
+    }
+  };
+
   const handleSearchChange = (text: string) => {
     setQuery(text);
-    if (text.trim()) {
-      searchTracks(text);
-      onSearchStart();
-    } else {
+    // Only clear results if text becomes empty
+    if (!text.trim()) {
       clearResults();
     }
   };
@@ -110,9 +116,11 @@ export function TopBar({
                 placeholderTextColor="#888"
                 value={query}
                 onChangeText={handleSearchChange}
+                onSubmitEditing={handleSearchSubmit}
                 onFocus={handleSearchFocus}
                 onBlur={handleSearchBlur}
                 autoFocus={currentView === 'search'}
+                returnKeyType="search"
               />
               {query.length > 0 && (
                 <TouchableOpacity
@@ -122,6 +130,17 @@ export function TopBar({
                   <Ionicons name="close-circle" size={20} color="#888" />
                 </TouchableOpacity>
               )}
+              <TouchableOpacity
+                style={styles.searchSubmitButton}
+                onPress={handleSearchSubmit}
+                disabled={!query.trim()}
+              >
+                <Ionicons 
+                  name="search" 
+                  size={18} 
+                  color={query.trim() ? "#1DB954" : "#444"} 
+                />
+              </TouchableOpacity>
             </View>
           )}
         </View>
@@ -192,8 +211,12 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     padding: 2,
   },
+  searchSubmitButton: {
+    marginLeft: 8,
+    padding: 4,
+  },
   searchButton: {
     marginLeft: 16,
     padding: 8,
   },
-}); 
+});
