@@ -10,15 +10,15 @@ import {
   Animated,
   ActivityIndicator,
 } from 'react-native';
-import { Audio } from 'expo-av';
+import { AudioPlayer, useAudioPlayer, AudioSource } from 'expo-audio';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import Slider from '@react-native-community/slider';
 import * as FileSystem from 'expo-file-system';
-import * as MediaLibrary from 'expo-media-library';
 import * as Haptics from 'expo-haptics';
+import * as Sharing from 'expo-sharing';
 
 import { Track } from '../types/music';
 import { MusicAPI } from '../lib/music-api';
@@ -42,7 +42,7 @@ export function Player({
   musicQueue,
   onQueueToggle,
 }: PlayerProps) {
-  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const player = useAudioPlayer();
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -73,23 +73,10 @@ export function Player({
       if (downloadTimeoutRef.current) {
         clearTimeout(downloadTimeoutRef.current);
       }
-      // Ensure audio is stopped and cleaned up on unmount
-      if (sound) {
+      // Cleanup audio player
+      if (player) {
         console.log('🧹 Component unmounting - cleaning up audio');
-        // Use a more robust cleanup approach
-        sound.getStatusAsync()
-          .then(status => {
-            if (status.isLoaded) {
-              return sound.stopAsync().then(() => sound.unloadAsync());
-            } else {
-              return sound.unloadAsync();
-            }
-          })
-          .catch(error => {
-            console.log('⚠️ Error during component unmount cleanup:', error);
-            // Try to unload anyway as a last resort
-            sound.unloadAsync().catch(console.error);
-          });
+        player.pause();
       }
     };
   }, []); // Only run on unmount
@@ -100,93 +87,90 @@ export function Player({
       isShuffled: musicQueue.isShuffled,
       repeatMode: musicQueue.repeatMode,
       currentIndex: musicQueue.currentIndex,
-      tracksLength: musicQueue.tracks?.length || 0
+      queueLength: musicQueue.queue.length
     });
-  }, [musicQueue.isShuffled, musicQueue.repeatMode, musicQueue.currentIndex, musicQueue.tracks]);
+  }, [musicQueue.isShuffled, musicQueue.repeatMode, musicQueue.currentIndex, musicQueue.queue.length]);
 
-  // Reset rotation when track changes
+  // Load new track when track changes
   useEffect(() => {
-    console.log('🎵 Track changed, resetting rotation for:', track.title);
-    rotationValue.setValue(0);
-  }, [track.id]); // Only depend on track.id
+    if (track) {
+      loadAudio();
+    }
+  }, [track.id]); // Only reload when track ID changes
 
-  // Handle rotation animation based on playing state
+  // Handle play/pause state changes
   useEffect(() => {
-    if (isPlaying) {
-      // Small delay to ensure any track change effects have completed
-      setTimeout(() => {
-        if (rotationAnimationRef.current) {
-          rotationAnimationRef.current.stop();
-        }
-        
-        rotationAnimationRef.current = Animated.loop(
-          Animated.timing(rotationValue, {
-            toValue: 1,
-            duration: 8000,
-            useNativeDriver: true,
-          }),
-          { iterations: -1 }
-        );
-        
-        rotationAnimationRef.current.start();
-        console.log('🎵 Rotation animation started/restarted');
-      }, 50);
-    } else {
-      // Stop rotation when not playing
-      if (rotationAnimationRef.current) {
-        rotationAnimationRef.current.stop();
-        rotationAnimationRef.current = null;
-        console.log('🎵 Rotation animation stopped');
+    if (player) {
+      if (isPlaying) {
+        player.play();
+      } else {
+        player.pause();
       }
     }
+  }, [isPlaying, player]);
+
+  // Listen to player events
+  useEffect(() => {
+    if (!player) return;
+
+    const positionSubscription = player.addListener('playbackStatusUpdate', (status) => {
+      // Only update position if user is not currently seeking and enough time has passed since last seek
+      const timeSinceLastSeek = Date.now() - lastSeekTimeRef.current;
+      if (!isSeeking && timeSinceLastSeek > 200 && status.currentTime !== undefined) {
+        setPosition(status.currentTime * 1000); // Convert to milliseconds
+      }
+      
+      // Always update duration
+      if (status.duration !== undefined) {
+        setDuration(status.duration * 1000); // Convert to milliseconds
+      }
+    });
+
+    const finishSubscription = player.addListener('playbackStatusUpdate', (status) => {
+      if (status.isLoaded && status.didJustFinish) {
+        console.log('🎵 Track finished - calling handleNext(), repeatMode:', musicQueue.repeatMode);
+        handleNext();
+      }
+    });
 
     return () => {
-      // Cleanup rotation on effect cleanup
-      if (rotationAnimationRef.current) {
-        rotationAnimationRef.current.stop();
-        rotationAnimationRef.current = null;
-      }
+      positionSubscription?.remove();
+      finishSubscription?.remove();
     };
-  }, [isPlaying, rotationValue]); // Separate effect for rotation based on playing state
+  }, [player, isSeeking, musicQueue.repeatMode]);
 
-  // Configure audio session on mount
+  // Start album art rotation when playing
   useEffect(() => {
-    const configureAudio = async () => {
-      try {
-        await Audio.setAudioModeAsync({
-          allowsRecordingIOS: false,
-          staysActiveInBackground: true,
-          playsInSilentModeIOS: true,
-          shouldDuckAndroid: true,
-          playThroughEarpieceAndroid: false,
-        });
-      } catch (error) {
-        console.error('Failed to configure audio session:', error);
-      }
-    };
-
-    configureAudio();
-  }, []);
-
-  useEffect(() => {
-    loadAudio();
-  }, [track.id]);
-
-  useEffect(() => {
-    if (sound) {
-      sound.getStatusAsync().then(status => {
-        if (status.isLoaded) {
-          if (isPlaying) {
-            sound.playAsync().catch(console.error);
-          } else {
-            sound.pauseAsync().catch(console.error);
-          }
-        } else {
-          console.log('⚠️ Sound not loaded, skipping play/pause in useEffect');
-        }
-      }).catch(console.error);
+    if (isPlaying) {
+      startRotation();
+    } else {
+      stopRotation();
     }
-  }, [isPlaying, sound]);
+  }, [isPlaying]);
+
+  const startRotation = () => {
+    if (rotationAnimationRef.current) {
+      rotationAnimationRef.current.stop();
+    }
+    
+    rotationAnimationRef.current = Animated.loop(
+      Animated.timing(rotationValue, {
+        toValue: 1,
+        duration: 10000,
+        useNativeDriver: true,
+      }),
+      { iterations: -1 }
+    );
+    
+    rotationAnimationRef.current.start();
+  };
+
+  const stopRotation = () => {
+    if (rotationAnimationRef.current) {
+      rotationAnimationRef.current.stop();
+      rotationAnimationRef.current = null;
+    }
+  };
 
   const loadAudio = async () => {
     // Prevent multiple concurrent loadAudio calls
@@ -196,7 +180,7 @@ export function Player({
     }
     
     // Check if we're loading the same track - if so, don't reload
-    if (currentTrackIdRef.current === track.id && sound) {
+    if (currentTrackIdRef.current === track.id) {
       console.log('🎵 Same track, skipping reload');
       return;
     }
@@ -205,27 +189,6 @@ export function Player({
     currentTrackIdRef.current = track.id;
     
     try {
-      // Stop and unload any existing sound first
-      if (sound) {
-        console.log('🛑 Stopping and unloading previous sound');
-        try {
-          const status = await sound.getStatusAsync();
-          if (status.isLoaded) {
-            await sound.stopAsync();
-            await sound.unloadAsync();
-          }
-        } catch (error) {
-          console.log('⚠️ Error checking/stopping previous sound:', error);
-          // Try to unload anyway in case it's in a weird state
-          try {
-            await sound.unloadAsync();
-          } catch (unloadError) {
-            console.log('⚠️ Error unloading previous sound:', unloadError);
-          }
-        }
-        setSound(null);
-      }
-
       // Reset player state for new track
       setPosition(0);
       setDuration(0);
@@ -235,39 +198,13 @@ export function Player({
       const audioUrl = await MusicAPI.getStreamUrl(track.id.toString());
       console.log('🔗 Stream URL received:', audioUrl);
       
-      const { sound: newSound } = await Audio.Sound.createAsync(
-        { uri: audioUrl },
-        { 
-          shouldPlay: false, 
-          isLooping: false, 
-          volume: volume,
-          // Reduce update frequency to prevent performance issues
-          progressUpdateIntervalMillis: 1000, // Update every 1 second instead of default 250ms
-          positionMillis: 0
-        }
-      );
-
-      setSound(newSound);
-      
-      newSound.setOnPlaybackStatusUpdate((status) => {
-        if (status.isLoaded) {
-          // Only update position if user is not currently seeking and enough time has passed since last seek
-          const timeSinceLastSeek = Date.now() - lastSeekTimeRef.current;
-          if (!isSeeking && timeSinceLastSeek > 200 && status.positionMillis !== undefined) {
-            setPosition(status.positionMillis);
-          }
-          
-          // Always update duration
-          if (status.durationMillis !== undefined) {
-            setDuration(status.durationMillis);
-          }
-          
-          if (status.didJustFinish) {
-            console.log('🎵 Track finished - calling handleNext(), repeatMode:', musicQueue.repeatMode);
-            handleNext();
-          }
-        }
+      // Replace the current audio source
+      player.replace({
+        uri: audioUrl,
       });
+
+      // Set volume
+      player.volume = volume;
 
     } catch (error) {
       console.error('Error loading audio:', error);
@@ -281,19 +218,14 @@ export function Player({
   const handlePlayPause = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     
-    if (sound) {
+    if (player) {
       try {
-        const status = await sound.getStatusAsync();
-        if (status.isLoaded) {
-          if (isPlaying) {
-            await sound.pauseAsync();
-          } else {
-            await sound.playAsync();
-          }
-          onPlayingChange(!isPlaying);
+        if (isPlaying) {
+          player.pause();
         } else {
-          console.log('⚠️ Sound not loaded, cannot play/pause');
+          player.play();
         }
+        onPlayingChange(!isPlaying);
       } catch (error) {
         console.error('Error in handlePlayPause:', error);
       }
@@ -309,16 +241,10 @@ export function Player({
     if (musicQueue.repeatMode === 'one') {
       // For repeat one, restart the current track without calling musicQueue.playNext()
       console.log('🔁 Repeat One: Restarting current track');
-      if (sound) {
-        sound.getStatusAsync().then(status => {
-          if (status.isLoaded) {
-            sound.setPositionAsync(0).catch(console.error);
-            sound.playAsync().catch(console.error);
-            onPlayingChange(true);
-          } else {
-            console.log('⚠️ Sound not loaded, cannot restart track');
-          }
-        }).catch(console.error);
+      if (player) {
+        player.seekTo(0);
+        player.play();
+        onPlayingChange(true);
       }
       return;
     }
@@ -344,19 +270,14 @@ export function Player({
   };
 
   const handleSeek = async (value: number) => {
-    if (sound) {
+    if (player) {
       try {
-        const status = await sound.getStatusAsync();
-        if (status.isLoaded) {
-          // Immediately update the position state for instant visual feedback
-          setPosition(value);
-          // Then seek the audio to that position
-          await sound.setPositionAsync(value);
-          // Record the seek time to prevent immediate position updates from status callback
-          lastSeekTimeRef.current = Date.now();
-        } else {
-          console.log('⚠️ Sound not loaded, cannot seek');
-        }
+        // Immediately update the position state for instant visual feedback
+        setPosition(value);
+        // Then seek the audio to that position (convert milliseconds to seconds)
+        player.seekTo(value / 1000);
+        // Record the seek time to prevent immediate position updates from status callback
+        lastSeekTimeRef.current = Date.now();
       } catch (error) {
         console.error('Error seeking:', error);
       }
@@ -368,19 +289,14 @@ export function Player({
   };
 
   const handleSliderComplete = async (value: number) => {
-    if (sound) {
+    if (player) {
       try {
-        const status = await sound.getStatusAsync();
-        if (status.isLoaded) {
-          // Immediately update the position state for instant visual feedback
-          setPosition(value);
-          // Then seek the audio to that position
-          await sound.setPositionAsync(value);
-          // Record the seek time to prevent immediate position updates from status callback
-          lastSeekTimeRef.current = Date.now();
-        } else {
-          console.log('⚠️ Sound not loaded, cannot seek in slider complete');
-        }
+        // Immediately update the position state for instant visual feedback
+        setPosition(value);
+        // Then seek the audio to that position (convert milliseconds to seconds)
+        player.seekTo(value / 1000);
+        // Record the seek time to prevent immediate position updates from status callback
+        lastSeekTimeRef.current = Date.now();
       } catch (error) {
         console.error('Error seeking:', error);
       }
@@ -396,18 +312,19 @@ export function Player({
   };
 
   const handleVolumeChange = async (value: number) => {
-    const newVolume = value / 100;
-    setVolume(newVolume);
-    if (sound) {
-      await sound.setVolumeAsync(newVolume);
+    // FullScreenPlayer now passes 0-1 range directly
+    setVolume(value);
+    if (player) {
+      player.volume = value;
     }
   };
 
-  const handleMuteToggle = async () => {
+  const handleMute = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const newMutedState = !isMuted;
     setIsMuted(newMutedState);
-    if (sound) {
-      await sound.setVolumeAsync(newMutedState ? 0 : volume);
+    if (player) {
+      player.volume = newMutedState ? 0 : volume;
     }
   };
 
@@ -433,8 +350,8 @@ export function Player({
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     
     // Auto-pause the music when download starts
-    if (isPlaying && sound) {
-      await sound.pauseAsync();
+    if (isPlaying && player) {
+      player.pause();
       onPlayingChange(false);
       console.log('🎵 Music paused for download');
     }
@@ -448,12 +365,12 @@ export function Player({
     }
     
     try {
-      // Request permissions
-      const { status: mediaLibraryStatus } = await MediaLibrary.requestPermissionsAsync();
+      // Check if sharing is available
+      const isAvailable = await Sharing.isAvailableAsync();
       
-      if (mediaLibraryStatus !== 'granted') {
+      if (!isAvailable) {
         if (isMountedRef.current) {
-          setDownloadError('Media library permission is required to save music files');
+          setDownloadError('Sharing is not available on this device');
           setDownloadStatus('error');
         }
         return;
@@ -490,24 +407,18 @@ export function Player({
       if (downloadResult) {
         console.log('📥 Download completed:', downloadResult.uri);
         
-        // For production builds, save to media library
-        if (mediaLibraryStatus === 'granted') {
-          try {
-            const asset = await MediaLibrary.createAssetAsync(downloadResult.uri);
-            
-            // Try to create or get the OpenSpot album
-            let album = await MediaLibrary.getAlbumAsync('OpenSpot');
-            if (!album) {
-              album = await MediaLibrary.createAlbumAsync('OpenSpot', asset, false);
-            } else {
-              await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
-            }
-            
-            console.log('📥 File saved to media library in OpenSpot album');
-          } catch (mediaError) {
-            console.log('📥 File saved to app documents, media library save failed:', mediaError);
-            // Don't throw error, just log it - file is still saved to documents
-          }
+        // Share the downloaded file
+        try {
+          await Sharing.shareAsync(downloadResult.uri, {
+            mimeType: 'audio/mpeg',
+            dialogTitle: `Share ${track.title} by ${track.artist}`,
+            UTI: 'public.audio'
+          });
+          
+          console.log('📥 File shared successfully');
+        } catch (shareError) {
+          console.log('📥 File downloaded but sharing failed:', shareError);
+          // Still mark as success since file was downloaded
         }
         
         try {
@@ -803,10 +714,6 @@ export function Player({
         position={position}
         duration={duration}
         onSeek={handleSeek}
-        volume={volume}
-        onVolumeChange={handleVolumeChange}
-        isMuted={isMuted}
-        onMuteToggle={handleMuteToggle}
         onNext={handleNext}
         onPrevious={handlePrevious}
         onShuffle={handleShuffle}
