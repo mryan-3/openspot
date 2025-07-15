@@ -30,7 +30,7 @@
 
 ---
 
-**OpenSpot** is the native version of the popular OpenSpot music streaming application. Built with React Native and Expo, it brings the same seamless, high-fidelity listening experience to your Windows, MacOS and Android devices with native performance and optimized features.
+**OpenSpot** is the native version of the popular OpenSpot music streaming application. Built with React Native and Expo (for Android & iOS apps), ElectornJS (for Desktop Apps), it brings the same seamless, high-fidelity listening experience to your Windows, MacOS and Android devices with native performance and optimized features.
 
 ## ✨ Screenshots
 
@@ -166,7 +166,8 @@ The app uses EAS Build with the following profiles configured in `eas.json`:
 
 ## 💻 Tech Stack
 
-- **Framework**: [React Native](https://reactnative.dev/) with [Expo](https://expo.dev/)
+- **Mobile Framework**: [React Native](https://reactnative.dev/) with [Expo](https://expo.dev/)
+- **Desktop Apps Framework**: [ElectornJS](https://www.electronjs.org/) 
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
 - **Navigation**: [Expo Router](https://expo.github.io/router/)
 - **Audio**: [Expo AV](https://docs.expo.dev/versions/latest/sdk/av/)
