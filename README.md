@@ -1,8 +1,9 @@
 # OpenSpot 🎶📱
 
 <p align="center">
- <img width="100" alt="OpenSpot Logo" src="https://github.com/user-attachments/assets/a5ce6530-3f01-4418-bfe8-09a0d6055cb1" />
+ <img width="100" alt="OpenSpot Logo" src="https://github.com/user-attachments/assets/9f56500d-d950-48c6-a362-bcbc74be88cb" />
 </p>
+
 
 
 
@@ -34,17 +35,26 @@
 
 ## ✨ Screenshots
 
+Android
+
 ![2025-07-14 00 51 30](https://github.com/user-attachments/assets/5a48d1e1-c862-4cea-9d0a-a29606ac5b74)
+
+MacOS
+
+<img width="1312" height="912" alt="Screenshot 2025-07-15 at 9 37 24 PM" src="https://github.com/user-attachments/assets/1cb18d3f-4986-4eb2-9cd2-1b606fbf31db" />
+
+
+
 
 - **Release Notes & Changelog** : [HERE](https://github.com/BlackHatDevX/openspot-music-app/releases)
 
 ## 📱 Download Links
 
 ### Android
-- **Download .apk**: [Latest Release V2.0.2](https://github.com/BlackHatDevX/openspot-music-app/releases/download/v2.0.2/OpenSpot-2.0.2-release.apk)
+- **Download .apk**: [OpenSpot-2.0.2-release.apk](https://github.com/BlackHatDevX/openspot-music-app/releases/download/v2.0.2/OpenSpot-2.0.2-release.apk)
 
 ### MacOS
-- **Download .dmg**: Coming Soon!
+- **Download .dmg**: [OpenSpot.Music-2.0.2-arm64.dmg](https://github.com/BlackHatDevX/openspot-music-app/releases/download/v2.0.2/OpenSpot.Music-2.0.2-arm64.dmg)
 
 ### Windows
 - **Download .exe**: Coming Soon!
@@ -175,6 +185,7 @@ The app uses EAS Build with the following profiles configured in `eas.json`:
 - **State Management**: React Hooks & Context
 - **Build System**: [EAS Build](https://docs.expo.dev/build/introduction/)
 - **Development**: [Expo Go](https://expo.dev/client) for testing
+- ### This app’s streaming is powered by dab.yeet.su — special thanks to them.
 
 
 ## 🤝 Contributing & Community
