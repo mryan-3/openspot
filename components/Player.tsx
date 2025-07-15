@@ -10,11 +10,10 @@ import {
   Animated,
   ActivityIndicator,
 } from 'react-native';
-import { AudioPlayer, useAudioPlayer, AudioSource } from 'expo-audio';
+import { useAudioPlayer, setAudioModeAsync } from 'expo-audio';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import Slider from '@react-native-community/slider';
 import * as FileSystem from 'expo-file-system';
 import * as Haptics from 'expo-haptics';
@@ -64,6 +63,24 @@ export function Player({
   const downloadTimeoutRef = useRef<number | null>(null);
   const currentTrackIdRef = useRef<number | null>(null);
   const lastSeekTimeRef = useRef<number>(0);
+
+  // Configure audio session for background playback
+  useEffect(() => {
+    const configureAudioSession = async () => {
+      try {
+        await setAudioModeAsync({
+          playsInSilentMode: true,
+          interruptionMode: 'duckOthers',
+          shouldPlayInBackground: true,
+        });
+        console.log('🎵 Audio session configured for background playback');
+      } catch (error) {
+        console.error('Failed to configure audio session:', error);
+      }
+    };
+
+    configureAudioSession();
+  }, []);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -198,7 +215,7 @@ export function Player({
       const audioUrl = await MusicAPI.getStreamUrl(track.id.toString());
       console.log('🔗 Stream URL received:', audioUrl);
       
-      // Replace the current audio source
+      // Replace the current audio source with metadata for background playback
       player.replace({
         uri: audioUrl,
       });
@@ -714,6 +731,10 @@ export function Player({
         position={position}
         duration={duration}
         onSeek={handleSeek}
+        volume={volume}
+        onVolumeChange={handleVolumeChange}
+        isMuted={isMuted}
+        onMuteToggle={handleMute}
         onNext={handleNext}
         onPrevious={handlePrevious}
         onShuffle={handleShuffle}

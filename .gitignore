@@ -113,3 +113,4 @@ test-*.md
 # Build outputs
 build/
 dist/
+.env

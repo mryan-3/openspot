@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import { SearchResponse, SearchParams, Track } from '../types/music';
 
-const API_BASE_URL = 'https://dab.yeet.su/api';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 // Configure axios instance
 const apiClient = axios.create({
