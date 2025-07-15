@@ -8,10 +8,10 @@
 
 
 
-<h3 align="center">Your Gateway to Limitless Music - Now on Mobile!</h3>
+<h3 align="center">Your Gateway to Limitless Music - Now on Android, MacOS and Windows!</h3>
 
 <p align="center">
-  <strong>Stream and download high-quality music for free on your mobile device, with no ads and no login required.</strong>
+  <strong>Stream and download high-quality music for free on your device, with no ads and no login required.</strong>
   <br />
   <em>Note: The Next.js web version has been moved to another branch and the demo URL is no longer active.</em>
 </p>
@@ -30,31 +30,40 @@
 
 ---
 
-**OpenSpot Mobile** is the native mobile version of the popular OpenSpot music streaming application. Built with React Native and Expo, it brings the same seamless, high-fidelity listening experience to your iOS and Android devices with native performance and mobile-optimized features.
+**OpenSpot** is the native version of the popular OpenSpot music streaming application. Built with React Native and Expo, it brings the same seamless, high-fidelity listening experience to your Windows, MacOS and Android devices with native performance and optimized features.
 
 ## ✨ Screenshots
 
 ![2025-07-14 00 51 30](https://github.com/user-attachments/assets/5a48d1e1-c862-4cea-9d0a-a29606ac5b74)
 
+- **Release Notes & Changelog** : [HERE](https://github.com/BlackHatDevX/openspot-music-app/releases)
 
 ## 📱 Download Links
 
 ### Android
-- **APK Download**: [Latest Release V2.0.2](https://github.com/BlackHatDevX/openspot-music-app/releases/download/v2.0.2/OpenSpot-2.0.2-release.apk)
-- **Release Notes & Changelog** : [HERE](https://github.com/BlackHatDevX/openspot-music-app/releases)
+- **Download .apk**: [Latest Release V2.0.2](https://github.com/BlackHatDevX/openspot-music-app/releases/download/v2.0.2/OpenSpot-2.0.2-release.apk)
+
+### MacOS
+- **Download .dmg**: Coming Soon!
+
+### Windows
+- **Download .exe**: Coming Soon!
+
+### Windows
+- **Download .deb**: Coming Soon!
 
 ### iOS
 - **TestFlight**: Coming Soon!
 
 ## ✨ Features
 
-- **Native Mobile Experience**: Optimized for iOS and Android with smooth animations and native performance
+- **Native Experience**: Optimized for MacOS, Linux, Windows and Android  with smooth animations and native performance
 - **High-Quality Streaming**: Listen to your favorite tracks in the best possible quality
 - **Offline Downloads**: Save music directly to your device for offline listening
 - **Background Playback**: Continue listening while using other apps
 - **No Login Required**: Jump right in! No accounts or sign-ups needed
 - **Like & Collect**: Build your personal collection by liking songs
-- **Beautiful Mobile UI**: Clean, modern interface designed specifically for mobile devices
+- **Beautiful UI**: Clean, modern interface designed
 - **Persistent Player**: Your queue and playback state are saved across app restarts
 - **Completely Free & Ad-Free**: Enjoy uninterrupted music without any cost or advertisements
 
@@ -169,7 +178,7 @@ The app uses EAS Build with the following profiles configured in `eas.json`:
 
 ## 🤝 Contributing & Community
 
-OpenSpot Mobile is an open-source project. We welcome all contributions, from bug fixes to feature suggestions. Help us make OpenSpot the best free music platform for mobile devices!
+OpenSpot is an open-source project. We welcome all contributions, from bug fixes to feature suggestions. Help us make OpenSpot the best free music platform for all devices!
 
 
 ## **Telegram** : [Openspot Music](https://telegram.dog/Openspot_Music)
