@@ -30,7 +30,7 @@ This repository contains **two complete music streaming applications**:
 
 ### 🎵 **OpenSpot Mobile** (React Native + Expo)
 - **Platforms**: Android, iOS
-- **Location**: `openspot-music-app/`
+- **Location**: `openspot-music-mobile/`
 - **Features**: Native mobile experience with offline downloads, background playback, and persistent state
 
 ### 🖥️ **OpenSpot Desktop** (Electron + React)
