@@ -59,7 +59,7 @@ MacOS
 ### Windows
 - **Download .exe**: Coming Soon!
 
-### Windows
+### Linux (Debian/Ubuntu)
 - **Download .deb**: Coming Soon!
 
 ### iOS
