@@ -1,5 +1,11 @@
 # Changelog
 
+## [v2.0.2] - 2025-01-16
+
+### Added
+- **macOS Support**: Full desktop app support for macOS with native window controls and audio management
+- **Project Structure**: Added complete Electron desktop app alongside existing React Native mobile app
+
 ## [v2.0.1] - 2025-07-15
 
 ### Added
@@ -12,3 +18,4 @@
 ### Fixed
 - Downloading issues on some devices by replacing media library saving with sharing flow.
 - Search functionality errors in **TopBar** component resolved.
+

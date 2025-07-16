@@ -1,0 +1,80 @@
+# Node modules
+node_modules/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build directories
+android/app/build/
+ios/build/
+ios/Pods/
+ios/Podfile.lock
+
+# Metro & bundler
+.expo/
+.expo-shared/
+.cache/
+dist/
+tmp/
+*.tmp
+*.tsbuildinfo
+
+# Test coverage
+coverage/
+
+# React Native packager
+*.packager
+*.iml
+
+# React Native specific
+*.keystore
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.xcuserstate
+
+# iOS
+ios/*.xcodeproj/project.xcworkspace/
+ios/*.xcworkspace/
+ios/*.xcodeproj/xcuserdata/
+ios/*.xcodeproj/project.xcworkspace/xcuserdata/
+ios/DerivedData/
+ios/build/
+ios/.swiftpm/
+ios/.symlinks/
+ios/.idea/
+
+# Android
+android/.gradle/
+android/.idea/
+android/local.properties
+android/.DS_Store
+android/app/*.iml
+android/*.iml
+android/captures/
+
+# Environment files
+.env
+.env.*
+.env.local
+.env.production.local
+.env.development.local
+
+# VSCode / IDE
+.vscode/
+.idea/
+*.sw?
+
+# Misc
+*.orig
+*.bak
