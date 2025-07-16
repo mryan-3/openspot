@@ -166,12 +166,6 @@ npm run electron-dev
 
 ---
 
-## 🎵 Music API
-
-Both apps are powered by **dab.yeet.su** - special thanks to them for providing the streaming service!
-
----
-
 ## 🤝 Contributing
 
 We welcome contributions to both apps!
