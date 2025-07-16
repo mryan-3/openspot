@@ -174,11 +174,7 @@ Both apps are powered by **dab.yeet.su** - special thanks to them for providing 
 
 ## 🤝 Contributing
 
-We welcome contributions to both apps! Please check the individual README files for specific contribution guidelines:
-
-- **Mobile App**: See [`openspot-music-app/README.md`](openspot-music-app/README.md)
-- **Desktop App**: See [`openspot-music-electron/README.md`](openspot-music-electron/README.md)
-
+We welcome contributions to both apps!
 ## 📞 Community & Support
 
 - **Telegram**: [Openspot Music](https://telegram.dog/Openspot_Music)
