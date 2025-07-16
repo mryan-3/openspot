@@ -2,7 +2,6 @@ import React from 'react';
 import { Box, Typography, Button, CardMedia, Stack } from '@mui/material';
 
 const APP_VERSION = '2.0.2'; // Update as needed or import from package.json
-const secret = ['VGhp', 'cyBhcH', 'AncyBz', 'dHJlYW', '1pbmcg', 'aXMgcG', '93ZXJl', 'ZCBieS', 'BkYWIu', 'eWVldC', '5zdQ=='];
 
 const About: React.FC = () => {
   return (
@@ -37,19 +36,6 @@ const About: React.FC = () => {
           Check for Updates
         </Button>
       </Stack>
-
-      {/* DAB Icon */}
-      <CardMedia
-        component="img"
-        image="https://dab.yeet.su/icons/ios/144.png"
-        alt="DAB Icon"
-        sx={{ width: 72, height: 72, borderRadius: 8, mb: 1, mt: 6 }}
-      />
-
-      {/* Powered By Note */}
-      <Typography variant="body2" sx={{ color: '#7c7c7c', fontStyle: 'italic', textAlign: 'center', maxWidth: 400 }}>
-        {atob(secret.join(''))}
-      </Typography>
     </Box>
   );
 };
