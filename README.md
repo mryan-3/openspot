@@ -88,7 +88,8 @@ This repository contains **two complete music streaming applications**:
 
 ### Screenshots
 
-![Android App](https://github.com/user-attachments/assets/5a48d1e1-c862-4cea-9d0a-a29606ac5b74)
+![WhatsApp Image 2025-07-26 at 00 52 14](https://github.com/user-attachments/assets/cc7b262d-ccfe-4899-bd86-56d0e3e90be7)
+
 
 
 ### Download Links
