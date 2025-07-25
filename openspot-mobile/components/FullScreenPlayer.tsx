@@ -15,9 +15,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
+import * as FileSystem from 'expo-file-system';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Animated, Easing } from 'react-native';
 
 import { Track } from '../types/music';
 import { useLikedSongs } from '../hooks/useLikedSongs';
+import { PlaylistStorage, Playlist } from '@/lib/playlist-storage';
+import { DownloadButton } from './DownloadButton';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -38,7 +43,7 @@ interface FullScreenPlayerProps {
   onPrevious: () => void;
   onShuffle: () => void;
   onRepeat: () => void;
-  onDownload: () => void;
+  onShare: () => void;
   musicQueue?: any;
   onQueueToggle?: () => void;
 }
@@ -60,13 +65,57 @@ export function FullScreenPlayer({
   onPrevious,
   onShuffle,
   onRepeat,
-  onDownload,
+  onShare,
   musicQueue,
   onQueueToggle,
-}: FullScreenPlayerProps) {
+  onPlaylistsUpdated,
+}: FullScreenPlayerProps & { onPlaylistsUpdated?: () => void }) {
   const { isLiked, toggleLike } = useLikedSongs();
   const [isSeeking, setIsSeeking] = useState(false);
   const [seekPosition, setSeekPosition] = useState(0);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [adding, setAdding] = useState(false);
+  const [addSuccess, setAddSuccess] = useState(false);
+  React.useEffect(() => {
+    const fetchPlaylists = async () => {
+      const pls = await PlaylistStorage.getPlaylists();
+      setPlaylists(pls);
+      const preSelected = pls.filter(pl => pl.trackIds.includes(track.id.toString())).map(pl => pl.name);
+      setSelected(preSelected);
+    };
+    fetchPlaylists();
+  }, [track.id]);
+
+  const handleAddToPlaylist = async () => {
+    setAdding(true);
+    await PlaylistStorage.addTrackToPlaylists(track, selected);
+    const toRemove = playlists.filter(pl => !selected.includes(pl.name) && pl.trackIds.includes(track.id.toString()));
+    for (const pl of toRemove) {
+      await PlaylistStorage.removeTrackFromPlaylist(track.id.toString(), pl.name);
+    }
+    setAdding(false);
+    setShowAddModal(false);
+    setSelected([]);
+    setAddSuccess(true);
+    setTimeout(() => setAddSuccess(false), 1500);
+    if (typeof onPlaylistsUpdated === 'function') {
+      onPlaylistsUpdated();
+    } else {
+      const updatePlaylists = async () => {
+        const pls = await PlaylistStorage.getPlaylists();
+        setPlaylists(pls);
+        const preSelected = pls.filter(pl => pl.trackIds.includes(track.id.toString())).map(pl => pl.name);
+        setSelected(preSelected);
+      };
+      updatePlaylists();
+    }
+  };
+
+  const toggleSelect = (name: string) => {
+    setSelected(sel => sel.includes(name) ? sel.filter(n => n !== name) : [...sel, name]);
+  };
 
   const formatTime = (millis: number) => {
     const totalSeconds = Math.floor(millis / 1000);
@@ -110,7 +159,6 @@ export function FullScreenPlayer({
     toggleLike(track);
   };
 
-
   const handleClose = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onClose();
@@ -123,9 +171,9 @@ export function FullScreenPlayer({
     }
   };
 
-  const handleDownload = () => {
+  const handleShare = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    onDownload();
+    onShare();
   };
 
   return (
@@ -158,8 +206,8 @@ export function FullScreenPlayer({
             <Ionicons name="chevron-down" size={28} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Now Playing</Text>
-          <TouchableOpacity style={styles.moreButton}>
-            <Ionicons name="ellipsis-horizontal" size={24} color="#fff" />
+          <TouchableOpacity style={styles.moreButton} onPress={handleShare}>
+            <Ionicons name="share-social" size={24} color="#fff" />
           </TouchableOpacity>
         </View>
 
@@ -231,24 +279,64 @@ export function FullScreenPlayer({
             <TouchableOpacity onPress={handleNext} style={styles.controlButton}>
               <Ionicons name="play-skip-forward" size={32} color="#fff" />
             </TouchableOpacity>
-            
-            <TouchableOpacity onPress={handleDownload} style={styles.controlButton}>
-              <Ionicons name="download" size={24} color="#fff" />
-            </TouchableOpacity>
+            <DownloadButton track={track} style={styles.controlButton} />
           </View>
 
           {/* Bottom Controls */}
           <View style={styles.bottomControls}>
-            {/* <TouchableOpacity onPress={handleLike} style={styles.bottomButton}>
-              <Ionicons 
-                name={isLiked(track.id) ? "heart" : "heart-outline"} 
-                size={24} 
-                color={isLiked(track.id) ? "#1DB954" : "#fff"} 
-              />
-            </TouchableOpacity> */}
-            
+            <TouchableOpacity
+              onPress={async () => {
+                const pls = await PlaylistStorage.getPlaylists();
+                setPlaylists(pls);
+                const preSelected = pls.filter(pl => pl.trackIds.includes(track.id.toString())).map(pl => pl.name);
+                setSelected(preSelected);
+                setShowAddModal(true);
+              }}
+              style={styles.addPlaylistButton}
+              activeOpacity={0.85}
+            >
+              <LinearGradient
+                colors={["#1DB954", "#1ed760"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.addPlaylistButtonGradient}
+              >
+                <Ionicons name="add-circle" size={24} color="#fff" style={{ marginRight: 8 }} />
+                <Text style={styles.addPlaylistButtonText}>Add to Playlist</Text>
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
         </View>
+        {/* Add to Playlist Modal */}
+        <Modal visible={showAddModal} transparent animationType="fade" onRequestClose={() => setShowAddModal(false)}>
+          <View style={styles.addModalOverlay}>
+            <View style={styles.addModalBox}>
+              <Text style={styles.addModalTitle}>Add to Playlist</Text>
+              {playlists.filter(pl => pl.name !== 'offline').length === 0 && <Text style={{ color: '#888', marginBottom: 12 }}>No playlists found.</Text>}
+              {playlists.filter(pl => pl.name !== 'offline').map(pl => (
+                <TouchableOpacity
+                  key={pl.name}
+                  style={styles.addModalItem}
+                  onPress={() => toggleSelect(pl.name)}
+                >
+                  <Ionicons
+                    name={selected.includes(pl.name) ? 'checkbox' : 'square-outline'}
+                    size={22}
+                    color={selected.includes(pl.name) ? '#1DB954' : '#888'}
+                  />
+                  <Text style={{ color: '#fff', marginLeft: 10 }}>{pl.name}</Text>
+                </TouchableOpacity>
+              ))}
+              <TouchableOpacity style={[styles.addModalButton, { backgroundColor: '#1DB954' }]} onPress={handleAddToPlaylist} disabled={adding}>
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>{adding ? 'Updating...' : 'Update'}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.addModalCancel} onPress={() => setShowAddModal(false)}>
+                <Text style={{ color: '#fff', fontSize: 15 }}>Cancel</Text>
+              </TouchableOpacity>
+              {addSuccess && <Text style={{ color: '#1DB954', marginTop: 10 }}>Added to playlist!</Text>}
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </Modal>
   );
@@ -378,23 +466,89 @@ const styles = StyleSheet.create({
   bottomControls: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    marginBottom: 12,
   },
   bottomButton: {
     padding: 12,
-  },
-  volumeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
-    marginLeft: 20,
   },
-  volumeButton: {
-    padding: 8,
-    marginRight: 12,
-  },
-  volumeSlider: {
+  addModalOverlay: {
     flex: 1,
-    height: 40,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addModalBox: {
+    backgroundColor: '#181818',
+    borderRadius: 16,
+    padding: 24,
+    width: '80%',
+    alignItems: 'center',
+  },
+  addModalTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 18,
+  },
+  addModalItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    alignSelf: 'flex-start',
+  },
+  addModalButton: {
+    marginTop: 18,
+    paddingVertical: 10,
+    paddingHorizontal: 32,
+    borderRadius: 24,
+    alignItems: 'center',
+  },
+  addModalCancel: {
+    marginTop: 10,
+  },
+  addPlaylistButton: {
+    borderRadius: 32,
+    overflow: 'hidden',
+    shadowColor: '#1DB954',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
+    marginHorizontal: 16,
+  },
+  addPlaylistButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 28,
+    borderRadius: 32,
+  },
+  addPlaylistButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+    letterSpacing: 0.5,
+  },
+  downloadAlertBox: {
+    position: 'absolute',
+    top: 60,
+    left: 24,
+    right: 24,
+    backgroundColor: '#1DB954',
+    borderRadius: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+    zIndex: 999,
+    shadowColor: '#1DB954',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 8,
   },
 }); 

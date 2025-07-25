@@ -92,7 +92,7 @@ This repository contains **two complete music streaming applications**:
 
 ### Download Links
 
-- **Android APK**: [OpenSpot-2.0.2-release.apk](https://github.com/BlackHatDevX/openspot-music-app/releases/download/v2.0.2/OpenSpot-2.0.2-release.apk)
+- **Android APK**: [OpenSpot-2.0.3-release.apk](https://github.com/BlackHatDevX/openspot-music-app/releases/download/v2.0.3/OpenSpot-2.0.3-release.apk)
 - **iOS**: Coming Soon (TestFlight)
 
 ### Development Setup
@@ -161,6 +161,7 @@ npm run electron-pack
 - **Navigation**: [Expo Router](https://expo.github.io/router/)
 - **Audio**: [Expo AV](https://docs.expo.dev/versions/latest/sdk/av/)
 - **Build**: [EAS Build](https://docs.expo.dev/build/introduction/)
+- **Location-Fetching**: [IPinfo API](https://github.com/ipinfo)
 
 ### Desktop App
 - **Framework**: [Electron](https://www.electronjs.org/) + [React](https://reactjs.org/)

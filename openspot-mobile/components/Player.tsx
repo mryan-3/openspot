@@ -14,13 +14,13 @@ import { useAudioPlayer, setAudioModeAsync } from 'expo-audio';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import Slider from '@react-native-community/slider';
 import * as FileSystem from 'expo-file-system';
 import * as Haptics from 'expo-haptics';
 import * as Sharing from 'expo-sharing';
 
 import { Track } from '../types/music';
 import { MusicAPI } from '../lib/music-api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FullScreenPlayer } from './FullScreenPlayer';
 import { useLikedSongs } from '../hooks/useLikedSongs';
 
@@ -28,7 +28,7 @@ interface PlayerProps {
   track: Track;
   isPlaying: boolean;
   onPlayingChange: (playing: boolean) => void;
-  musicQueue: any; // We'll type this properly later
+  musicQueue: any; // Will type this properly later
   onQueueToggle: () => void;
 }
 
@@ -92,8 +92,13 @@ export function Player({
       }
       // Cleanup audio player
       if (player) {
-        console.log('🧹 Component unmounting - cleaning up audio');
-        player.pause();
+        try {
+          console.log('🧹 Component unmounting - cleaning up audio');
+          player.pause();
+        } catch (e) {
+          // Ignore errors if player is already released
+          console.warn('Player pause on unmount failed:', e);
+        }
       }
     };
   }, []); // Only run on unmount
@@ -195,34 +200,45 @@ export function Player({
       console.log('🎵 Audio already loading, skipping duplicate call');
       return;
     }
-    
     // Check if we're loading the same track - if so, don't reload
     if (currentTrackIdRef.current === track.id) {
       console.log('🎵 Same track, skipping reload');
       return;
     }
-    
     setIsLoading(true);
     currentTrackIdRef.current = track.id;
-    
     try {
       // Reset player state for new track
       setPosition(0);
       setDuration(0);
-
-      // Get the actual streaming URL from the API
-      console.log('🎵 Loading stream URL for track:', track.id);
-      const audioUrl = await MusicAPI.getStreamUrl(track.id.toString());
-      console.log('🔗 Stream URL received:', audioUrl);
-      
+      // 1. Check for offline file
+      let audioUrl: string | null = null;
+      try {
+        const offlineData = await AsyncStorage.getItem(`offline_${track.id}`);
+        if (offlineData) {
+          const { fileUri } = JSON.parse(offlineData);
+          // Check if file exists
+          const fileInfo = await FileSystem.getInfoAsync(fileUri);
+          if (fileInfo.exists) {
+            audioUrl = fileUri;
+            console.log('🎵 Playing from offline file:', fileUri);
+          }
+        }
+      } catch (e) {
+        // Ignore and fallback to streaming
+      }
+      // 2. If not offline, get the actual streaming URL from the API
+      if (!audioUrl) {
+        console.log('🎵 Loading stream URL for track:', track.id);
+        audioUrl = await MusicAPI.getStreamUrl(track.id.toString());
+        console.log('🔗 Stream URL received:', audioUrl);
+      }
       // Replace the current audio source with metadata for background playback
       player.replace({
         uri: audioUrl,
       });
-
       // Set volume
       player.volume = volume;
-
     } catch (error) {
       console.error('Error loading audio:', error);
       // Show user-friendly error message
@@ -357,7 +373,7 @@ export function Player({
     console.log('🔁 Repeat mode changed:', newRepeatMode);
   };
 
-  const handleDownload = async () => {
+  const handleShare= async () => {
     // Prevent multiple simultaneous downloads
     if (downloadStatus === 'downloading') {
       console.log('📥 Download already in progress, ignoring request');
@@ -520,111 +536,46 @@ export function Player({
   });
 
   return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={['#1a1a1a', '#000', '#000']}
-        style={styles.gradient}
-      >
-        {/* Progress Bar */}
-        <TouchableOpacity onPress={handlePlayerClick} style={styles.progressTouchArea}>
-          <View style={styles.progressContainer}>
-            <View style={styles.progressBarWithTime}>
-              <Text style={styles.timeText}>{formatTime(position)}</Text>
-              <Slider
-                value={position}
-                minimumValue={0}
-                maximumValue={duration}
-                onValueChange={handleSliderChange}
-                onSlidingStart={handleSliderStart}
-                onSlidingComplete={handleSliderComplete}
-                thumbTintColor="#1DB954"
-                minimumTrackTintColor="#888"
-                maximumTrackTintColor="#333"
-                style={styles.progressFill}
-              />
-              <Text style={styles.timeText}>{formatTime(duration)}</Text>
-            </View>
+    <>
+    <View style={styles.cardroot}>
+      <View style={styles.cardContainer}>
+        <TouchableOpacity
+          style={styles.cardTouchable}
+          activeOpacity={0.85}
+          onPress={() => setIsFullScreenOpen(true)}
+        >
+          <Image
+            source={{ uri: MusicAPI.getOptimalImage(track.images) }}
+            style={styles.cardAlbumArt}
+            contentFit="cover"
+          />
+          <View style={styles.cardInfoArea}>
+            <Text style={styles.cardTitle} numberOfLines={1}>{track.title}</Text>
+            <Text style={styles.cardArtist} numberOfLines={1}>{track.artist}</Text>
           </View>
         </TouchableOpacity>
-
-        {/* Main Controls */}
-        <View style={styles.mainControls}>
-          <TouchableOpacity
-            style={styles.controlButton}
-            onPress={handleDownload}
-          >
-            <Ionicons
-              name="download"
-              size={20}
-              color="#fff"
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.controlButton}
-            onPress={handlePrevious}
-            disabled={!musicQueue.hasPrevious()}
-          >
-            <Ionicons
-              name="play-skip-back"
-              size={24}
-              color={musicQueue.hasPrevious() ? "#fff" : "#444"}
-            />
-          </TouchableOpacity>
-
-          <View style={styles.playButtonContainer}>
-            <Animated.View style={[styles.rotatingAlbumArt, { transform: [{ rotate: spin }] }]}>
-              <Image
-                source={{ uri: MusicAPI.getOptimalImage(track.images) }}
-                style={styles.albumArtBehindPlay}
-                contentFit="cover"
-              />
-            </Animated.View>
-            <TouchableOpacity
-              style={styles.playButton}
-              onPress={handlePlayPause}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <Ionicons name="hourglass" size={24} color="#000" />
-              ) : (
-                <Ionicons
-                  name={isPlaying ? "pause" : "play"}
-                  size={24}
-                  color="#000"
-                />
-              )}
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity
-            style={styles.controlButton}
-            onPress={handleNext}
-            disabled={!musicQueue.hasNext()}
-          >
-            <Ionicons
-              name="play-skip-forward"
-              size={24}
-              color={musicQueue.hasNext() ? "#fff" : "#444"}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.controlButton}
-            onPress={(e) => {
-              e.stopPropagation();
-              onQueueToggle();
-            }}
-          >
-            <Ionicons
-              name="menu"
-              size={20}
-              color="#fff"
-            />
-          </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.cardIconButton}
+          onPress={() => toggleLike(track)}
+          activeOpacity={0.7}
+        >
+          <Ionicons name={isLiked(track.id) ? 'heart' : 'heart-outline'} size={24} color={isLiked(track.id) ? '#1DB954' : '#fff'} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.cardIconButton}
+          onPress={handlePlayPause}
+          activeOpacity={0.7}
+        >
+          <Ionicons name={isPlaying ? 'pause' : 'play'} size={28} color="#fff" />
+        </TouchableOpacity>
         </View>
-      </LinearGradient>
-      
+        <View style={styles.whiteProgressBarBg}>
+        <View style={[styles.whiteProgressBarFill, { width: duration > 0 ? `${(position / duration) * 100}%` : '0%' }]} />
+      </View>
+      </View>
+      {/* White progress bar at bottom */}
+
+
       {/* Download Modal */}
       <Modal
         visible={isDownloadModalOpen}
@@ -649,7 +600,6 @@ export function Player({
                   <Ionicons name="close" size={20} color="#888" />
                 </TouchableOpacity>
               </View>
-
               {/* Content */}
               <View style={styles.modalContent}>
                 {/* Track Info */}
@@ -679,6 +629,7 @@ export function Player({
                     <>
                       <ActivityIndicator size="large" color="#1DB954" style={styles.spinner} />
                       <Text style={styles.statusText}>Downloading...</Text>
+                      <Text style={styles.statusText}>To save media, share it to your music library</Text>
                       <View style={styles.downloadProgressContainer}>
                         <View style={styles.downloadProgressBar}>
                           <View style={[styles.progressFillBar, { width: `${downloadProgress}%` }]} />
@@ -692,9 +643,6 @@ export function Player({
                     <>
                       <Ionicons name="checkmark-circle" size={48} color="#1DB954" style={styles.successIcon} />
                       <Text style={styles.successText}>Download Complete!</Text>
-                      <Text style={styles.successSubtext}>
-                        Saved to your music library
-                      </Text>
                     </>
                   )}
                   
@@ -707,7 +655,7 @@ export function Player({
                         style={styles.retryButton}
                         onPress={() => {
                           handleCloseDownloadModal();
-                          setTimeout(() => handleDownload(), 300);
+                          setTimeout(() => handleShare(), 300);
                         }}
                       >
                         <Text style={styles.retryButtonText}>Try Again</Text>
@@ -720,7 +668,7 @@ export function Player({
           </View>
         </View>
       </Modal>
-      
+
       {/* Full Screen Player */}
       <FullScreenPlayer
         isOpen={isFullScreenOpen}
@@ -739,98 +687,65 @@ export function Player({
         onPrevious={handlePrevious}
         onShuffle={handleShuffle}
         onRepeat={handleRepeat}
-        onDownload={handleDownload}
+        onShare={handleShare}
         musicQueue={musicQueue}
         onQueueToggle={onQueueToggle}
       />
-    </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#000',
+  cardContainer: {
+    width: '100%',
+    backgroundColor: '#1a2341',
+    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  gradient: {
-    paddingTop: 8,
-    paddingBottom: 16,
-  },
-  progressTouchArea: {
-    paddingBottom: 4,
-  },
-  progressContainer: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-  },
-  progressBar: {
-    height: 3,
-    backgroundColor: '#333',
-    borderRadius: 1.5,
-  },
-  progressFill: {
+  cardTouchable: {
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
-    height: 40,
-    marginHorizontal: 6,
   },
-  progressBarWithTime: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 4,
+  cardAlbumArt: {
+    width: 54,
+    height: 54,
+    borderRadius: 8,
+    marginRight: 14,
+    backgroundColor: '#222',
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#222',
   },
-  mainControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 32,
-    paddingVertical: 8,
+  cardInfoArea: {
+    flex: 1,
+    justifyContent: 'center',
   },
-  controlButton: {
+  cardTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  cardArtist: {
+    color: '#bfc8e6',
+    fontSize: 15,
+    fontWeight: '400',
+    marginBottom: 2,
+  },
+  cardIconButton: {
+    marginLeft: 12,
     padding: 8,
-  },
-  activeControlButton: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: 20,
-  },
-  playButtonContainer: {
-    position: 'relative',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  rotatingAlbumArt: {
-    position: 'absolute',
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1,
-  },
-  albumArtBehindPlay: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    opacity: 0.4,
-  },
-  playButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#1DB954',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 2,
-  },
-  timeText: {
-    fontSize: 12,
-    color: '#888',
-    width: 42,
-    textAlign: 'center',
-    flexShrink: 0,
+    borderRadius: 16,
   },
   modalOverlay: {
     flex: 1,
@@ -967,4 +882,75 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
+  // Add new styles for the visual progress bar and song title
+  visualProgressBarContainer: {
+    width: '100%',
+    height: 5,
+    backgroundColor: 'transparent',
+    margin: 0,
+    padding: 0,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+  },
+  visualProgressBarBg: {
+    width: '100%',
+    height: 5,
+    backgroundColor: '#222',
+    borderRadius: 0,
+    overflow: 'hidden',
+    margin: 0,
+    padding: 0,
+  },
+  visualProgressBarFill: {
+    height: 10,
+    backgroundColor: '#1DB954',
+    borderRadius: 0,
+    margin: 0,
+    padding: 0,
+  },
+  songTitleContainer: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 18,
+    marginBottom: 8,
+  },
+  songTitleText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    width: '100%',
+    letterSpacing: 0.2,
+  },
+
+
+  whiteProgressBarBg: {
+    marginHorizontal: 8,
+    height: 4,
+    backgroundColor: '#fff',
+    opacity: 0.18,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+    overflow: 'hidden',
+    marginTop: -4,
+    marginBottom: 0,
+  },
+  whiteProgressBarFill: {
+    height: 4,
+    backgroundColor: '#fff',
+    opacity: 1,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+  },
+  cardroot: {
+    width: '100%',
+    backgroundColor: '#1a2341',
+    borderRadius: 16,
+    flexDirection: 'column',
+  },
 }); 
+ 

@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
 
 interface UseSearchReturn {
   query: string;
@@ -29,6 +30,8 @@ interface TopBarProps {
   onSearchClick: () => void;
   onSearchStart: () => void;
   searchState: UseSearchReturn;
+  placeholderFontSize?: number;
+  autoFocus?: boolean;
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -39,9 +42,12 @@ export function TopBar({
   onSearchClick,
   onSearchStart,
   searchState,
+  placeholderFontSize = 16,
+  autoFocus,
 }: TopBarProps) {
   const [searchFocused, setSearchFocused] = useState(false);
   const { query, setQuery, searchTracks, clearResults } = searchState;
+  const router = useRouter();
 
   const handleSearchSubmit = () => {
     if (query.trim()) {
@@ -60,9 +66,13 @@ export function TopBar({
   };
 
   const handleBackPress = () => {
-    onViewChange('home');
-    clearResults();
-    setQuery('');
+    if (!query.trim()) {
+      router.push('/');
+    } else {
+      onViewChange('home');
+      clearResults();
+      setQuery('');
+    }
   };
 
   const handleSearchFocus = () => {
@@ -111,7 +121,7 @@ export function TopBar({
             <View style={styles.searchContainer}>
               <Ionicons name="search" size={20} color="#888" style={styles.searchIcon} />
               <TextInput
-                style={styles.searchInput}
+                style={[styles.searchInput, { fontSize: placeholderFontSize }]}
                 placeholder="Search for songs, artists..."
                 placeholderTextColor="#888"
                 value={query}
@@ -119,7 +129,7 @@ export function TopBar({
                 onSubmitEditing={handleSearchSubmit}
                 onFocus={handleSearchFocus}
                 onBlur={handleSearchBlur}
-                autoFocus={currentView === 'search'}
+                autoFocus={autoFocus || currentView === 'search'}
                 returnKeyType="search"
               />
               {query.length > 0 && (

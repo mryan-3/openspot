@@ -1,5 +1,30 @@
 # Changelog
 
+## \[v2.0.3] - 2025-07-26 (Android & iOS only – contributors welcome)
+
+### Added
+
+* **Offline Music Support**: Users can now play downloaded songs without internet access.
+* **Custom Playlist Support**: Create, manage, and organize your own playlists.
+* **App Update System**: Notifies users of new updates and guides them through the update process.
+* **Country-Specific Songs**: App now fetches user location using [ipinfo](https://github.com/ipinfo) to show trending tracks from their region.
+* **Trending Songs Integration**: Dynamically fetches trending music from [`trending.json`](https://github.com/BlackHatDevX/trending-music-os). Open for community contributions.
+
+### Changed
+
+* **Player UI Revamped**: Sleeker look with smoother transitions and better media control visibility.
+
+### Fixed
+
+* **Data Consumption Issue**: Playing downloaded songs now fully works offline without consuming mobile data.
+
+### Other
+
+* **Download Section**: A dedicated section to manage all your downloaded songs.
+* **Playlist Deletion Shortcut**: Long press a playlist to delete it instantly.
+
+
+
 ## [v2.0.2] - 2025-01-16
 
 ### Added
