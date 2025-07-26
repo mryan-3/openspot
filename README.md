@@ -71,18 +71,15 @@ This repository contains **two complete music streaming applications**:
 
 ---
 
-## ✨ Key Features (Both Apps)
+### 📢 Join Our Telegram Channel
 
-- **🎵 High-Quality Streaming**: Listen to your favorite tracks in the best possible quality
-- **💾 Offline Downloads**: Save music directly to your device for offline listening
-- **❤️ Like & Collect**: Build your personal collection by liking songs
-- **🔄 Background Playback**: Continue listening while using other apps
-- **🚫 No Login Required**: Jump right in! No accounts or sign-ups needed
-- **💾 Persistent State**: Your liked songs and recently played tracks are saved across app restarts
-- **🎨 Beautiful UI**: Clean, modern interface designed for each platform
-- **🆓 Completely Free & Ad-Free**: Enjoy uninterrupted music without any cost or advertisements
+Stay updated with **version releases**, and **important announcements** on official Openspot Telegram channel.
+
+[![Join us on Telegram](https://img.shields.io/badge/Join%20Us%20on-Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/openspot_music)
+
 
 ---
+
 
 ## 📱 Mobile App (React Native + Expo)
 
@@ -158,6 +155,19 @@ npm run electron-pack
 
 ---
 
+## ✨ Key Features (Both Apps)
+
+- **🎵 High-Quality Streaming**: Listen to your favorite tracks in the best possible quality
+- **💾 Offline Downloads**: Save music directly to your device for offline listening
+- **❤️ Like & Collect**: Build your personal collection by liking songs
+- **🔄 Background Playback**: Continue listening while using other apps
+- **🚫 No Login Required**: Jump right in! No accounts or sign-ups needed
+- **💾 Persistent State**: Your liked songs and recently played tracks are saved across app restarts
+- **🎨 Beautiful UI**: Clean, modern interface designed for each platform
+- **🆓 Completely Free & Ad-Free**: Enjoy uninterrupted music without any cost or advertisements
+
+---
+
 
 ## 💻 Tech Stack
 
@@ -178,6 +188,16 @@ npm run electron-pack
 ### Shared
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
 - **Package Manager**: npm/yarn
+
+---
+
+### Environment Configuration
+
+This project requires a single environment variable to function correctly.
+
+- A template is provided in the [`.env.template`](https://github.com/BlackHatDevX/openspot-music-app/blob/main/openspot-mobile/.env.template) file.
+- The required **value** to complete your `.env` file is shared in the **pinned message** of our **official Telegram channel**: [@openspot_music](https://t.me/openspot_music).
+
 
 ---
 
