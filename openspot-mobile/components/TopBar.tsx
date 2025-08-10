@@ -145,10 +145,10 @@ export function TopBar({
                 onPress={handleSearchSubmit}
                 disabled={!query.trim()}
               >
-                <Ionicons 
-                  name="search" 
-                  size={18} 
-                  color={query.trim() ? "#1DB954" : "#444"} 
+                <Ionicons
+                  name="search"
+                  size={18}
+                  color={query.trim() ? "#1DB954" : "#444"}
                 />
               </TouchableOpacity>
             </View>
