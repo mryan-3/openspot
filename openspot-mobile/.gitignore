@@ -30,6 +30,8 @@ tmp/
 # Test coverage
 coverage/
 
+.cursor/
+
 # React Native packager
 *.packager
 *.iml
